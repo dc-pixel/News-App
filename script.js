@@ -1,106 +1,57 @@
-//API Used: http://newsapi.org/s/india-news-api
-const container = document.querySelector(".container");
-const optionsContainer = document.querySelector(".options-container");
-// "in" stands for India
-const country = "in";
-const options = [
-  "general",
-  "entertainment",
-  "health",
-  "science",
-  "sports",
-  "technology",
-
-  
-];
-
-
-//100 requests per day
+const container = document.querySelector('.container');
+const optionsContainer = document.querySelector('.options-container');
+const country = 'in';
+const options = ['general','entertainment','health','science','sports','technology'];
 let requestURL;
 
-//Create cards from data
 const generateUI = (articles) => {
-  for (let item of articles) {
-    let card = document.createElement("div");
-    card.classList.add("news-card");
-    card.innerHTML = `<div class="news-image-container">
-    <img src="${item.urlToImage || "./newspaper.jpg"}" alt="" />
-    </div>
-    <div class="news-content">
-      <div class="news-title">
-        ${item.title}
-      </div>
-      <div class="news-description">
-      ${item.description || item.content || ""}
-      </div>
-      <a href="${item.url}" target="_blank" class="view-button">Read More</a>
-    </div>`;
+  if (!articles.length) {
+    container.innerHTML = '<p class="empty-state">No news articles were returned for this category.</p>';
+    return;
+  }
+  for (const item of articles) {
+    const card = document.createElement('article');
+    card.className = 'news-card';
+    card.innerHTML = `<div class="news-image-container"><img src="${item.urlToImage || './newspaper.jpg'}" alt="" loading="lazy" onerror="this.src='./newspaper.jpg'"></div><div class="news-content"><div class="news-title"></div><div class="news-description"></div><a href="${item.url}" target="_blank" rel="noopener noreferrer" class="view-button">Read More</a></div>`;
+    card.querySelector('.news-title').textContent = item.title || 'Untitled article';
+    card.querySelector('.news-description').textContent = item.description || item.content || 'No description available.';
     container.appendChild(card);
   }
 };
 
-//News API Call
 const getNews = async () => {
-  container.innerHTML = "";
-  let response = await fetch(requestURL);
-  if (!response.ok) {
-    alert("Data unavailable at the moment. Please try again later");
-    return false;
+  container.innerHTML = '<p class="empty-state">Loading latest news…</p>';
+  if (!apiKey) {
+    container.innerHTML = '<div class="empty-state"><strong>NewsAPI key required.</strong><br>For local use, open DevTools and run:<br><code>localStorage.setItem("newsApiKey", "YOUR_KEY")</code><br>Then reload the page.</div>';
+    return;
   }
-  let data = await response.json();
-  generateUI(data.articles);
+  try {
+    const response = await fetch(requestURL);
+    if (!response.ok) throw new Error(`News API returned ${response.status}`);
+    const data = await response.json();
+    if (data.status !== 'ok') throw new Error(data.message || 'News request failed');
+    container.innerHTML = '';
+    generateUI(data.articles || []);
+  } catch (error) {
+    console.error(error);
+    container.innerHTML = '<p class="empty-state">News is temporarily unavailable. Check your API key and try again.</p>';
+  }
 };
 
-//Category Selection
-const selectCategory = (e, category) => {
-  let options = document.querySelectorAll(".option");
-  options.forEach((element) => {
-    element.classList.remove("active");
-  });
-  requestURL = `https://newsapi.org/v2/top-headlines?country=${country}&category=${category}&apiKey=${apiKey}`;
-  e.target.classList.add("active");
+const selectCategory = (event, category) => {
+  document.querySelectorAll('.option').forEach((element) => element.classList.remove('active'));
+  requestURL = `https://newsapi.org/v2/top-headlines?country=${country}&category=${category}&apiKey=${encodeURIComponent(apiKey)}`;
+  event.currentTarget.classList.add('active');
   getNews();
 };
 
-//Options Buttons
 const createOptions = () => {
-  for (let i of options) {
-    optionsContainer.innerHTML += `<button class="option ${
-      i == "general" ? "active" : ""
-    }" onclick="selectCategory(event,'${i}')">${i}</button>`;
-  }
+  optionsContainer.innerHTML = options.map(category => `<button class="option ${category === 'general' ? 'active' : ''}" type="button" data-category="${category}">${category}</button>`).join('');
+  optionsContainer.querySelectorAll('.option').forEach(button => button.addEventListener('click', event => selectCategory(event, button.dataset.category)));
 };
 
-const init = () => {
-  optionsContainer.innerHTML = "";
-  getNews();
+window.addEventListener('load', () => {
+  requestURL = `https://newsapi.org/v2/top-headlines?country=${country}&category=general&apiKey=${encodeURIComponent(apiKey)}`;
   createOptions();
-};
-
-window.onload = () => {
-  requestURL = `https://newsapi.org/v2/top-headlines?country=${country}&category=general&apiKey=${apiKey}`;
-  init();
-
-};
-
-const optionsvar = {
-  bottom: '20px', // default: '32px'
-  
-  right: 'unset', // default: '32px'
-  left: '5px', // default: 'unset'
-  time: '0.2s', // default: '0.3s'
-  mixColor: '#fff', // default: '#fff'
-  backgroundColor: '#fff',  // default: '#fff'
-  buttonColorDark: '#100f2c',  // default: '#100f2c'
-  buttonColorLight: '#fff', // default: '#fff'
-  saveInCookies: true, // default: true,
-  label: '🌓', // default: ''
-  autoMatchOsTheme: true // default: true
-}
-
-const darkmode = new Darkmode(optionsvar);
-darkmode.showWidget();
-
-
-     
-    
+  getNews();
+});
