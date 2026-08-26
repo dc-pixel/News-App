@@ -1,30 +1,36 @@
-# 📰 News App
+# 📰 PulseNews
 
-A responsive India-focused news dashboard built with vanilla JavaScript and NewsAPI.
+A polished, responsive India-focused news dashboard built with vanilla JavaScript and NewsAPI.
 
-## Features
+## ✨ Features
 
-- India top headlines
-- General, entertainment, health, science, sports and technology categories
-- Responsive news cards
-- Dark-mode widget
-- Lazy-loaded images with fallback handling
-- Safe DOM rendering for article text
-- Clear loading and error states
-- No API secret committed to the repository
+- 🇮🇳 India top headlines
+- 7 news categories: general, business, entertainment, health, science, sports and technology
+- 🔎 Keyword search with NewsAPI's Everything endpoint
+- ⭐ Save articles to localStorage
+- 🌙 Persistent dark/light theme
+- ⚡ Skeleton loading and refresh controls
+- 🖼️ Lazy-loaded article images with fallback graphics
+- 📱 Responsive 1/2/3-column layout
+- ♿ Accessible buttons, labels and live status messaging
+- 🛡️ Safer DOM rendering and basic security headers via `vercel.json`
+- 🔐 No real API secret committed to GitHub
 
-## Tech Stack
+## 🧰 Tech Stack
 
 - HTML5
 - CSS3
-- Vanilla JavaScript
+- Vanilla JavaScript (ES6+)
 - NewsAPI
+- Vercel
 
-## Configure the API key
+## 🔑 Configure NewsAPI
 
 The repository intentionally does **not** contain a real API key.
 
-For local development, open the browser console and run:
+### Local development
+
+Open the browser console and run:
 
 ```js
 localStorage.setItem('newsApiKey', 'YOUR_NEWSAPI_KEY')
@@ -32,9 +38,13 @@ localStorage.setItem('newsApiKey', 'YOUR_NEWSAPI_KEY')
 
 Then reload the page.
 
-If the old exposed key was ever active, revoke/rotate it in the NewsAPI account before using this project again.
+### Vercel deployment
 
-## Run locally
+For the deployed version, create a Vercel project from this GitHub repository and add the environment variable `NEWS_API_KEY` in **Project Settings → Environment Variables**.
+
+> Current front-end code still reads the key client-side for compatibility with the original static architecture. That means the key can be inspected by visitors and should be treated as a demo/browser key. For a fully secure production application, move NewsAPI requests behind a Vercel Function or another server-side proxy.
+
+## 🚀 Run locally
 
 ```bash
 python -m http.server 8000
@@ -42,6 +52,16 @@ python -m http.server 8000
 
 Open `http://localhost:8000`.
 
-## Deployment
+## ☁️ Deploy to Vercel
 
-For a production deployment, use a backend/serverless function to keep API credentials out of browser code. A purely static deployment should be treated as a demo because browser-side API keys can be inspected by users.
+1. Open Vercel and choose **Add New → Project**.
+2. Import `dc-pixel/News-App` from GitHub.
+3. Leave the framework/build settings as the default static-site settings.
+4. Add `NEWS_API_KEY` to the Production environment variables.
+5. Deploy.
+
+Vercel will serve the HTML/CSS/JavaScript files directly. The repository already includes `vercel.json` with basic security headers.
+
+## 📌 Important
+
+Never commit a real NewsAPI key into `api-key.js` or Git history. If a previously exposed key was active, revoke/rotate it in the NewsAPI account before using it again.
