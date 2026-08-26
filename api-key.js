@@ -1,2 +1,3 @@
-
-let apiKey = "df8ca416c3144df18b69a09956664c8b";
+// Local configuration only. Never commit a real API key.
+// Copy this value from your NewsAPI account for local development.
+const apiKey = localStorage.getItem('newsApiKey') || '';
