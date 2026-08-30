@@ -1,0 +1,11 @@
+# Local API credentials and environment files
+.env
+.env.*
+!.env.example
+api-key.js
+
+# Dependencies and local tooling
+node_modules/
+.DS_Store
+.vscode/
+.idea/
