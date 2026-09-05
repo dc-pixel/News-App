@@ -17,6 +17,12 @@ let showingSaved = false;
 let lastArticles = [];
 
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
+const safeUrl = (value = '') => {
+  try {
+    const url = new URL(value);
+    return ['http:', 'https:'].includes(url.protocol) ? url.href : '#';
+  } catch { return '#'; }
+};
 
 const getSaved = () => {
   try { return JSON.parse(localStorage.getItem('savedNews') || '[]'); } catch { return []; }
@@ -57,7 +63,7 @@ const renderArticles = (articles) => {
     const title = item.title && item.title !== '[Removed]' ? item.title : 'Untitled story';
     const description = item.description || 'Open the original article to read the full story.';
     const source = item.source?.name || 'News source';
-    const url = item.url || '#';
+    const url = safeUrl(item.url);
     const image = item.urlToImage || fallbackImage;
     return `
       <article class="news-card">
