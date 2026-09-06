@@ -27,7 +27,16 @@ const safeUrl = (value = '') => {
 const getSaved = () => {
   try { return JSON.parse(localStorage.getItem('savedNews') || '[]'); } catch { return []; }
 };
-const setSaved = (items) => localStorage.setItem('savedNews', JSON.stringify(items));
+const setSaved = (items) => {
+  try {
+    localStorage.setItem('savedNews', JSON.stringify(items));
+    return true;
+  } catch (error) {
+    console.error('Unable to save articles', error);
+    showStatus('Unable to save this story. Your browser storage may be full or blocked.', 'error');
+    return false;
+  }
+};
 const articleId = (article) => article.url || `${article.title}-${article.publishedAt}`;
 
 const updateSavedCount = () => { savedCount.textContent = getSaved().length; };
@@ -92,7 +101,7 @@ const toggleSaved = (id) => {
     const article = lastArticles.find((item) => articleId(item) === id);
     if (article) saved.unshift(article);
   }
-  setSaved(saved.slice(0, 50));
+  if (!setSaved(saved.slice(0, 50))) return;
   updateSavedCount();
   if (showingSaved) renderArticles(getSaved()); else renderArticles(lastArticles);
 };
