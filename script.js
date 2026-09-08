@@ -170,13 +170,14 @@ savedButton.addEventListener('click', () => {
 const applyTheme = (theme) => {
   document.documentElement.dataset.theme = theme;
   themeButton.textContent = theme === 'dark' ? '☀' : '☾';
-  localStorage.setItem('newsTheme', theme);
+  try { localStorage.setItem('newsTheme', theme); } catch (error) { console.warn('Unable to persist theme preference', error); }
 };
 themeButton.addEventListener('click', () => applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
 
 window.addEventListener('load', () => {
-  const savedTheme = localStorage.getItem('newsTheme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  applyTheme(savedTheme);
+  let savedTheme = null;
+  try { savedTheme = localStorage.getItem('newsTheme'); } catch (error) { console.warn('Unable to read theme preference', error); }
+  applyTheme(savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
   renderCategories();
   updateSavedCount();
   fetchNews();
