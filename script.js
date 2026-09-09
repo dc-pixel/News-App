@@ -106,6 +106,16 @@ const toggleSaved = (id) => {
   if (showingSaved) renderArticles(getSaved()); else renderArticles(lastArticles);
 };
 
+const fetchWithTimeout = async (url, timeoutMs = 10000) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
 const fetchNews = async () => {
   showingSaved = false;
   renderSkeletons();
@@ -119,7 +129,7 @@ const fetchNews = async () => {
     } else {
       url = `https://newsapi.org/v2/top-headlines?country=${country}&category=${currentCategory}&pageSize=30&apiKey=${encodeURIComponent(apiKey)}`;
     }
-    const response = await fetch(url);
+    const response = await fetchWithTimeout(url);
     const data = await response.json();
     if (!response.ok || data.status !== 'ok') throw new Error(data.message || `Request failed (${response.status})`);
     const articles = (data.articles || []).filter((item) => item.title && item.url);
@@ -130,6 +140,8 @@ const fetchNews = async () => {
     container.innerHTML = '';
     if (error.message === 'MISSING_KEY') {
       showStatus('NewsAPI key not configured. Add NEWS_API_KEY in your Vercel environment variables, or set localStorage.newsApiKey for local testing.', 'info');
+    } else if (error.name === 'AbortError') {
+      showStatus('News request timed out. Please try again.', 'error');
     } else {
       showStatus('Unable to load news right now. Check the API key, API plan limits, and network connection.', 'error');
     }
