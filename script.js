@@ -48,6 +48,10 @@ const formatDate = (value) => {
 };
 
 const fallbackImage = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450"><defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#2563eb"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs><rect width="100%" height="100%" fill="url(#g)"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="Arial" font-size="42" font-weight="700">PulseNews</text></svg>`)}`;
+const safeImageUrl = (value = '') => {
+  const url = safeUrl(value);
+  return url === '#' ? fallbackImage : url;
+};
 
 const renderSkeletons = () => {
   container.innerHTML = Array.from({ length: 6 }, () => '<article class="news-card skeleton"></article>').join('');
@@ -73,7 +77,7 @@ const renderArticles = (articles) => {
     const description = item.description || 'Open the original article to read the full story.';
     const source = item.source?.name || 'News source';
     const url = safeUrl(item.url);
-    const image = item.urlToImage || fallbackImage;
+    const image = safeImageUrl(item.urlToImage);
     return `
       <article class="news-card">
         <img class="news-image" src="${escapeHtml(image)}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${fallbackImage}'" />
