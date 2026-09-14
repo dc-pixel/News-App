@@ -134,7 +134,12 @@ const fetchNews = async () => {
       url = `https://newsapi.org/v2/top-headlines?country=${country}&category=${currentCategory}&pageSize=30&apiKey=${encodeURIComponent(apiKey)}`;
     }
     const response = await fetchWithTimeout(url);
-    const data = await response.json();
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      throw new Error(`Invalid response (${response.status})`);
+    }
     if (!response.ok || data.status !== 'ok') throw new Error(data.message || `Request failed (${response.status})`);
     const articles = (data.articles || []).filter((item) => item.title && item.url);
     resultLabel.textContent = currentQuery ? `Results for “${currentQuery}”` : `${currentCategory} headlines`;
