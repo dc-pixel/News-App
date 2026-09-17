@@ -15,6 +15,7 @@ let currentCategory = 'general';
 let currentQuery = '';
 let showingSaved = false;
 let lastArticles = [];
+let latestRequestId = 0;
 
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
 const safeUrl = (value = '') => {
@@ -121,6 +122,7 @@ const fetchWithTimeout = async (url, timeoutMs = 10000) => {
 };
 
 const fetchNews = async () => {
+  const requestId = ++latestRequestId;
   showingSaved = false;
   renderSkeletons();
   showStatus('');
@@ -141,10 +143,12 @@ const fetchNews = async () => {
       throw new Error(`Invalid response (${response.status})`);
     }
     if (!response.ok || data.status !== 'ok') throw new Error(data.message || `Request failed (${response.status})`);
+    if (requestId !== latestRequestId) return;
     const articles = (data.articles || []).filter((item) => item.title && item.url);
     resultLabel.textContent = currentQuery ? `Results for “${currentQuery}”` : `${currentCategory} headlines`;
     renderArticles(articles);
   } catch (error) {
+    if (requestId !== latestRequestId) return;
     console.error(error);
     container.innerHTML = '';
     if (error.message === 'MISSING_KEY') {
@@ -154,7 +158,9 @@ const fetchNews = async () => {
     } else {
       showStatus('Unable to load news right now. Check the API key, API plan limits, and network connection.', 'error');
     }
-  } finally { refreshButton.disabled = false; }
+  } finally {
+    if (requestId === latestRequestId) refreshButton.disabled = false;
+  }
 };
 
 const renderCategories = () => {
