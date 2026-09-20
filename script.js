@@ -79,6 +79,9 @@ const renderArticles = (articles) => {
     const source = item.source?.name || 'News source';
     const url = safeUrl(item.url);
     const image = safeImageUrl(item.urlToImage);
+    const readAction = url === '#'
+      ? '<span class="view-button" aria-disabled="true">Article unavailable</span>'
+      : `<a class="view-button" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Read article ↗</a>`;
     return `
       <article class="news-card">
         <img class="news-image" src="${escapeHtml(image)}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${fallbackImage}'" />
@@ -87,7 +90,7 @@ const renderArticles = (articles) => {
           <h2 class="news-title">${escapeHtml(title)}</h2>
           <p class="news-description">${escapeHtml(description)}</p>
           <div class="news-actions">
-            <a class="view-button" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Read article ↗</a>
+            ${readAction}
             <button class="save-button ${isSaved ? 'saved' : ''}" data-save-id="${escapeHtml(id)}" type="button">${isSaved ? '★ Saved' : '☆ Save'}</button>
           </div>
         </div>
