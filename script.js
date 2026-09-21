@@ -16,6 +16,7 @@ let currentQuery = '';
 let showingSaved = false;
 let lastArticles = [];
 let latestRequestId = 0;
+let activeRequestController = null;
 
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
 const safeUrl = (value = '') => {
@@ -114,18 +115,24 @@ const toggleSaved = (id) => {
   if (showingSaved) renderArticles(getSaved()); else renderArticles(lastArticles);
 };
 
-const fetchWithTimeout = async (url, timeoutMs = 10000) => {
+const fetchWithTimeout = async (url, timeoutMs = 10000, signal) => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  const abortFromParent = () => controller.abort();
+  signal?.addEventListener('abort', abortFromParent, { once: true });
   try {
     return await fetch(url, { signal: controller.signal });
   } finally {
     clearTimeout(timeoutId);
+    signal?.removeEventListener('abort', abortFromParent);
   }
 };
 
 const fetchNews = async () => {
   const requestId = ++latestRequestId;
+  activeRequestController?.abort();
+  activeRequestController = new AbortController();
+  const requestController = activeRequestController;
   showingSaved = false;
   renderSkeletons();
   showStatus('');
@@ -138,7 +145,7 @@ const fetchNews = async () => {
     } else {
       url = `https://newsapi.org/v2/top-headlines?country=${country}&category=${currentCategory}&pageSize=30&apiKey=${encodeURIComponent(apiKey)}`;
     }
-    const response = await fetchWithTimeout(url);
+    const response = await fetchWithTimeout(url, 10000, requestController.signal);
     let data;
     try {
       data = await response.json();
@@ -162,7 +169,10 @@ const fetchNews = async () => {
       showStatus('Unable to load news right now. Check the API key, API plan limits, and network connection.', 'error');
     }
   } finally {
-    if (requestId === latestRequestId) refreshButton.disabled = false;
+    if (requestId === latestRequestId) {
+      refreshButton.disabled = false;
+      activeRequestController = null;
+    }
   }
 };
 
@@ -192,6 +202,7 @@ refreshButton.addEventListener('click', fetchNews);
 savedButton.addEventListener('click', () => {
   showingSaved = !showingSaved;
   if (showingSaved) {
+    activeRequestController?.abort();
     resultLabel.textContent = 'Saved stories';
     renderArticles(getSaved());
   } else fetchNews();
