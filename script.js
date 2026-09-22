@@ -27,7 +27,10 @@ const safeUrl = (value = '') => {
 };
 
 const getSaved = () => {
-  try { return JSON.parse(localStorage.getItem('savedNews') || '[]'); } catch { return []; }
+  try {
+    const saved = JSON.parse(localStorage.getItem('savedNews') || '[]');
+    return Array.isArray(saved) ? saved : [];
+  } catch { return []; }
 };
 const setSaved = (items) => {
   try {
