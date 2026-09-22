@@ -202,7 +202,10 @@ refreshButton.addEventListener('click', fetchNews);
 savedButton.addEventListener('click', () => {
   showingSaved = !showingSaved;
   if (showingSaved) {
+    latestRequestId += 1;
     activeRequestController?.abort();
+    activeRequestController = null;
+    refreshButton.disabled = false;
     resultLabel.textContent = 'Saved stories';
     renderArticles(getSaved());
   } else fetchNews();
