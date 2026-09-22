@@ -154,7 +154,7 @@ const fetchNews = async () => {
     }
     if (!response.ok || data.status !== 'ok') throw new Error(data.message || `Request failed (${response.status})`);
     if (requestId !== latestRequestId) return;
-    const articles = (data.articles || []).filter((item) => item.title && item.url);
+    const articles = (Array.isArray(data.articles) ? data.articles : []).filter((item) => item.title && item.url);
     resultLabel.textContent = currentQuery ? `Results for “${currentQuery}”` : `${currentCategory} headlines`;
     renderArticles(articles);
   } catch (error) {
